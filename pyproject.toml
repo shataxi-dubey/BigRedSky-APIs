@@ -33,6 +33,13 @@ dependencies = [
   "langfuse>=3.0.8",
   "streamlit>=1.50.0",
   "requests>=2.32.4",
+  "pymupdf>=1.26.5",
+  "python-docx>=1.2.0",
+  "gliner>=0.2.26",
+  "qdrant-client>=1.16.1",
+  "sentence-transformers>=5.1.2",
+  "rank-bm25>=0.2.2",
+  "asyncpg>=0.31.0",
 ]
 
 [project.optional-dependencies]

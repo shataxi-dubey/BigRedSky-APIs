@@ -1,6 +1,7 @@
 """Celery application configuration and initialization."""
 
 from celery import Celery
+from celery.signals import worker_ready
 
 from app import settings
 
@@ -12,7 +13,9 @@ celery_app = Celery(
     "fastapi_app",
     broker=redis_url,
     backend=redis_url,
-    include=["app.tasks.chat.summary_task"],
+    include=[
+        "app.tasks.resume.resume_task",
+    ],
 )
 
 # Recommended Celery configuration
@@ -26,3 +29,11 @@ celery_app.conf.update(
     task_time_limit=300,  # 5 minutes
     result_expires=3600,  # 1 hour
 )
+
+
+@worker_ready.connect
+def preload_models(**kwargs):
+    from app.tasks.resume.resume_task import _get_gliner, _get_dense_model, _get_sparse_model
+    _get_gliner()
+    _get_dense_model()
+    _get_sparse_model()
