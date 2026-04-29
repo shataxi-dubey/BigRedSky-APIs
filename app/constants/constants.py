@@ -1,5 +1,9 @@
 """Constant variables"""
 
+# Contact Draft
+CONTACT_INPUT_TYPE_TEMPLATE = "template"
+CONTACT_INPUT_TYPE_RAW_TEXT = "raw_text"
+
 # JD Creator
 MAX_REFINEMENTS = 5
 JD_INPUT_TYPE_RAW_TEXT = "raw_text"
