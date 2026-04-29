@@ -8,14 +8,22 @@ from pydantic import BaseModel, Field, model_validator
 class JobDetails(BaseModel):
     """Structured job details used when input_type is 'details'."""
 
-    job_title: str
-    department: str
-    location: str
-    employment_type: str
-    responsibilities: List[str]
-    required_skills: List[str]
-    preferred_skills: List[str] = Field(default_factory=list)
-    compensation_range: str = ""
+    job_title: Optional[str] = None
+    job_role: Optional[str] = None
+    department: Optional[str] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    is_fully_remote: Optional[bool] = None
+    industry: Optional[str] = None
+    job_function: Optional[str] = None
+    employment_type: Optional[str] = None
+    is_full_time: Optional[bool] = None
+    responsibilities: Optional[List[str]] = None
+    required_skills: Optional[List[str]] = None
+    preferred_skills: Optional[List[str]] = Field(default=None)
+    compensation_range: Optional[str] = None
+    currency: Optional[str] = None
 
 
 class GenerateRequest(BaseModel):
