@@ -1,23 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: ats-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ats_user
-      POSTGRES_PASSWORD: ats_password
-      POSTGRES_DB: ats_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - monitoring
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ats_user -d ats_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   fastapi:
     build:
       context: .
@@ -30,7 +11,6 @@ services:
     depends_on:
       - prometheus
       - redis
-      - postgres
     networks:
       - monitoring
     env_file:
