@@ -11,6 +11,10 @@ NOT_FOUND = "Not Found"
 INVALID_CREDENTIALS = "Invalid Credentials"
 RATE_LIMIT_ERROR = "Rate limit exceeded. Try again in {retry_after} seconds."
 
+# Contact Draft
+CONTACT_DRAFTED = "Email draft generated successfully."
+CONTACT_DRAFT_PARSE_ERROR = "Failed to parse the LLM response for the email draft."
+
 # JD Creator
 JD_GENERATED = "Job description generated successfully."
 JD_REPHRASED = "Text rephrased successfully."
