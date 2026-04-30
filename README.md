@@ -1,1 +1,1 @@
-All the APIs of Bigredsky
+Celery + Redis for resume chunking and parsing 

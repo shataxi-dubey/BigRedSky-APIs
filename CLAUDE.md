@@ -2,7 +2,16 @@
 
 ## Project
 
-Applicant Tracking System (ATS) — Python/FastAPI backend API suite with five features: Resume Parser, JD Creator, Resume Summary, Contact Draft, and AI Ranking. See `ATS_PRD_v1.0.md` for full specs and `PRD.md` for the working requirements summary.
+Applicant Tracking System (ATS) — Python/FastAPI backend API suite with five features: Resume Parser, JD Creator, Resume Summary, Contact Draft, and AI Ranking. See `PRD.md` for full specs and working requirements summary.
+
+---
+
+  ## Pre-Implementation Checklist
+
+  Before writing any code for a feature:
+  1. **Read `PRD.md`** — understand the exact endpoints, request/response schemas, and pipeline steps defined for the feature.
+  2. **Read `rule.md`** — confirm folder structure and naming conventions.
+  3. Only then ask clarifying questions about decisions the PRD leaves open.
 
 ---
 

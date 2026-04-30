@@ -20,4 +20,4 @@ RUN uv pip install --system pyproject.toml
 COPY . /app
 
 # Run Celery worker
-CMD ["uv", "run", "celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
+CMD ["uv", "run", "celery", "-A", "app.tasks.celery_main.celery_app", "worker", "--loglevel=info"]

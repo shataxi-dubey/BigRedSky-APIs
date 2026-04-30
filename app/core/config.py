@@ -70,9 +70,24 @@ class AppConfig(BaseSettings):
     OPENAI_API_KEY: str = ""
     TAVILY_API_KEY: str = ""
 
+    # Database
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/bigredsky"
+
     # JD Creator models
     JD_LLM_MODEL: str = "gpt-4.1"
 
+    # Resume Parser models
+    RESUME_LLM_MODEL: str = "gpt-4.1-mini"
+    CHUNK_LLM_MODEL: str = "gpt-4.1-mini"
+    # Dense embedding model (vector dimension is read from the loaded model at runtime)
+    DENSE_EMBED_MODEL: str = "Qwen/Qwen3-Embedding-8b"
+    # Sparse embedding model (SPLADE)
+    SPARSE_EMBED_MODEL: str = "prithivida/Splade_PP_en_v1"
+
+    # Qdrant
+    QDRANT_URL: str = "http://localhost:6333"
+    QDRANT_API_KEY: str = ""
+    QDRANT_COLLECTION_NAME: str = "resume_chunks"
     # Contact Draft models
     CONTACT_LLM_MODEL: str = "gpt-4.1"
 
