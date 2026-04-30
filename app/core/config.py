@@ -89,6 +89,19 @@ class AppConfig(BaseSettings):
     LANGFUSE_PUBLIC_KEY: str = ""
     LANGFUSE_SECRET_KEY: str = ""
 
+    # Resume Summary
+    SUMMARY_LLM_MODEL: str = "gpt-4.1"
+    GLINER_MODEL: str = "urchade/gliner_small-v2.1"
+
+    # PostgreSQL
+    DATABASE_URL: str = "postgresql+asyncpg://ats_user:ats_password@localhost:5432/ats_db"
+
+    # AWS S3
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    AWS_S3_BUCKET: str = ""
+
 
 # Initialize configuration settings
 settings = AppConfig()
