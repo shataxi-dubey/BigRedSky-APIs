@@ -1,6 +1,6 @@
 """Pydantic request and response schemas for the Contact Draft API."""
 
-from typing import Dict, List, Literal, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -8,20 +8,16 @@ from pydantic import BaseModel, Field, model_validator
 class DraftRequest(BaseModel):
     """Request body for POST /api/v1/contact/draft."""
 
-    input_type: Literal["template", "raw_text"]
     template: Optional[str] = None
     raw_text: Optional[str] = None
-    custom_merge_fields: Optional[Dict[str, str]] = Field(
-        default=None,
-        description="Additional merge fields to incorporate, e.g. {'role': 'Engineer'}.",
+    merge_fields: List[str] = Field(
+        description="Merge field placeholders available for this draft, e.g. ['[*FirstName]', '[*JobTitle]'].",
     )
 
     @model_validator(mode="after")
-    def validate_input_fields(self) -> "DraftRequest":
-        if self.input_type == "template" and not self.template:
-            raise ValueError("template is required when input_type is 'template'.")
-        if self.input_type == "raw_text" and not self.raw_text:
-            raise ValueError("raw_text is required when input_type is 'raw_text'.")
+    def validate_inputs(self) -> "DraftRequest":
+        if not self.template and not self.raw_text:
+            raise ValueError("At least one of 'template' or 'raw_text' must be provided.")
         return self
 
 

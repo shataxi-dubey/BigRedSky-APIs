@@ -37,18 +37,20 @@ class ContactService:
 
     @staticmethod
     def _build_user_content(request: DraftRequest) -> str:
-        if request.input_type == "template":
-            base = f"Draft an outreach email based on the following template:\n\n{request.template}"
+        parts = []
+
+        if request.template and request.raw_text:
+            parts.append(f"Use the following email template as the structural base:\n\n{request.template}")
+            parts.append(f"Also incorporate the following recruiter instructions to personalise the draft:\n\n{request.raw_text}")
+        elif request.template:
+            parts.append(f"Draft an outreach email based on the following template:\n\n{request.template}")
         else:
-            base = f"Draft an outreach email based on the following description:\n\n{request.raw_text}"
+            parts.append(f"Draft an outreach email based on the following recruiter instructions:\n\n{request.raw_text}")
 
-        if request.custom_merge_fields:
-            fields_text = "\n".join(
-                f"- {k}: {v}" for k, v in request.custom_merge_fields.items()
-            )
-            base += f"\n\nCustom merge fields to incorporate:\n{fields_text}"
+        fields_text = "\n".join(f"- {f}" for f in request.merge_fields)
+        parts.append(f"Available merge field placeholders (use only these, placed intelligently):\n{fields_text}")
 
-        return base
+        return "\n\n".join(parts)
 
     @staticmethod
     def _parse_response(raw: str) -> DraftResponse:
