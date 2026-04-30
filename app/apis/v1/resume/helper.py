@@ -62,6 +62,7 @@ def scrub_pii(text: str) -> str:
         entities = model.predict_entities(text, SUMMARY_PII_LABELS, threshold=0.5)
         # Sort by start position descending so replacements don't shift offsets
         entities_sorted = sorted(entities, key=lambda e: e["start"], reverse=True)
+        logger.info(f"Scrubbed entities {entities_sorted}")
         for ent in entities_sorted:
             placeholder = SUMMARY_PII_PLACEHOLDERS.get(ent["label"], f"[{ent['label'].upper()}]")
             text = text[: ent["start"]] + placeholder + text[ent["end"] :]

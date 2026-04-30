@@ -20,7 +20,6 @@ JD_GENERATE_FIELD_REQUIRED = "{field} is required when input_type is '{input_typ
 
 # Resume Summary
 RESUME_SUMMARY_GENERATED = "Resume summary generated successfully."
-RESUME_SUMMARY_DELETED = "Resume summary deleted successfully."
 RESUME_SUMMARY_NOT_FOUND = "No summary found for the given candidate and JD."
 RESUME_SUMMARY_PARSE_ERROR = "Failed to parse the LLM response for the resume summary."
 RESUME_S3_FETCH_ERROR = "Failed to fetch resume file from S3."
