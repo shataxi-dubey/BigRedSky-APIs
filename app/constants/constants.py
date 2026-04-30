@@ -1,5 +1,9 @@
 """Constant variables"""
 
+# Contact Draft
+CONTACT_INPUT_TYPE_TEMPLATE = "template"
+CONTACT_INPUT_TYPE_RAW_TEXT = "raw_text"
+
 # JD Creator
 MAX_REFINEMENTS = 5
 JD_INPUT_TYPE_RAW_TEXT = "raw_text"
@@ -48,3 +52,13 @@ RESUME_SECTIONS = [
     "hobbies",
     "others",
 ]
+# Resume Summary
+SUMMARY_PII_LABELS = ["person", "email", "phone number", "address", "date of birth", "location"]
+SUMMARY_PII_PLACEHOLDERS = {
+    "person": "[NAME]",
+    "email": "[EMAIL]",
+    "phone number": "[PHONE]",
+    "address": "[ADDRESS]",
+    "date of birth": "[DOB]",
+    "location": "[LOCATION]",
+}

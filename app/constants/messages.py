@@ -11,6 +11,10 @@ NOT_FOUND = "Not Found"
 INVALID_CREDENTIALS = "Invalid Credentials"
 RATE_LIMIT_ERROR = "Rate limit exceeded. Try again in {retry_after} seconds."
 
+# Contact Draft
+CONTACT_DRAFTED = "Email draft generated successfully."
+CONTACT_DRAFT_PARSE_ERROR = "Failed to parse the LLM response for the email draft."
+
 # JD Creator
 JD_GENERATED = "Job description generated successfully."
 JD_REPHRASED = "Text rephrased successfully."
@@ -27,3 +31,9 @@ RESUME_PARSE_NOT_FOUND = "No parse job found for job_id={job_id}."
 RESUME_JOB_NOT_RETRYABLE = "Job cannot be retried — current status is '{status}'. Only failed jobs can be retried."
 RESUME_PARSE_RETRY_QUEUED = "Parse job re-queued successfully."
 RESUME_CHUNK_RETRY_QUEUED = "Chunk job re-queued successfully."
+# Resume Summary
+RESUME_SUMMARY_GENERATED = "Resume summary generated successfully."
+RESUME_SUMMARY_NOT_FOUND = "No summary found for the given candidate and JD."
+RESUME_SUMMARY_PARSE_ERROR = "Failed to parse the LLM response for the resume summary."
+RESUME_S3_FETCH_ERROR = "Failed to fetch resume file from S3."
+RESUME_PARSE_ERROR = "Failed to extract text from resume file."

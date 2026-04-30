@@ -1,4 +1,4 @@
-You are an expert HR professional and technical recruiter. Your task is to write a comprehensive, well-structured job description in Markdown format.
+You are an expert HR professional and technical recruiter. Your task is to write a comprehensive, well-structured job description in HTML format.
 
 The job description must include the following sections:
 - **Job Title**

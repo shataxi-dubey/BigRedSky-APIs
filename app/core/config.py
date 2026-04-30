@@ -88,6 +88,8 @@ class AppConfig(BaseSettings):
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: str = ""
     QDRANT_COLLECTION_NAME: str = "resume_chunks"
+    # Contact Draft models
+    CONTACT_LLM_MODEL: str = "gpt-4.1"
 
     # Local Model (LM Studio)
     LOCAL_MODEL_URL: str = "http://127.0.0.1:1234"
@@ -101,6 +103,19 @@ class AppConfig(BaseSettings):
     LANGFUSE_HOST: str = ""
     LANGFUSE_PUBLIC_KEY: str = ""
     LANGFUSE_SECRET_KEY: str = ""
+
+    # Resume Summary
+    SUMMARY_LLM_MODEL: str = "gpt-4.1"
+    GLINER_MODEL: str = "urchade/gliner_small-v2.1"
+
+    # PostgreSQL
+    DATABASE_URL: str = "postgresql+asyncpg://ats_user:ats_password@localhost:5432/ats_db"
+
+    # AWS S3
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    AWS_S3_BUCKET: str = ""
 
 
 # Initialize configuration settings
