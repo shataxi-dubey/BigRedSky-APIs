@@ -7,14 +7,10 @@ from fastapi import File, Form, Request, UploadFile
 from fastapi.routing import APIRouter
 from fastapi_utils.cbv import cbv
 
-from app.constants.messages import (
-    RESUME_CHUNK_RETRY_QUEUED,
-    RESUME_PARSE_QUEUED,
-    RESUME_PARSE_RETRY_QUEUED,
-)
+from app.constants.messages import RESUME_CHUNK_RETRY_QUEUED, RESUME_PARSE_COMPLETED
 from app.core.responses import AppJSONResponse
 
-from .models import ChunkStatusResponse, ParseJobResponse, ParseJobStatusResponse, RetryResponse
+from .models import ChunkStatusResponse, ParseJobStatusResponse, ParseResponse, ParseRetryResponse, RetryResponse
 from .service import ResumeService
 
 router = APIRouter()
@@ -41,7 +37,7 @@ class ResumeRoute:
     def __init__(self):
         self.service = ResumeService()
 
-    @router.post("/resume/parse", status_code=202)
+    @router.post("/resume/parse", status_code=200)
     async def parse(
         self,
         request: Request,
@@ -56,7 +52,11 @@ class ResumeRoute:
             ),
         ),
     ):
-        """Accept a PDF or DOCX resume, queue parse + chunk jobs, return job IDs.
+        """Parse a PDF or DOCX resume synchronously and return structured data.
+
+        Parsing runs in-request (text extraction → PII scrub → LLM extraction).
+        Chunking is dispatched to the background queue; poll chunk status via
+        GET /resume/chunk/{candidate_id}/status.
 
         - `resume`: PDF or DOCX file, max 10 MB
         - `candidate_id`: unique identifier for the candidate
@@ -64,12 +64,12 @@ class ResumeRoute:
         """
         fields = _parse_form_fields(form_fields)
         result = await self.service.parse_resume(resume, candidate_id, fields)
-        data = ParseJobResponse(**result).model_dump()
-        return AppJSONResponse(data=data, message=RESUME_PARSE_QUEUED, status_code=202)
+        data = ParseResponse(**result).model_dump()
+        return AppJSONResponse(data=data, message=RESUME_PARSE_COMPLETED)
 
     @router.get("/resume/parse/{job_id}/status")
     async def parse_status(self, request: Request, job_id: str):
-        """Poll the status of a parse job by job_id."""
+        """Retrieve a stored parse result by job_id."""
         result = await self.service.get_parse_status(job_id)
         data = ParseJobStatusResponse(**result).model_dump()
         return AppJSONResponse(data=data)
@@ -81,12 +81,12 @@ class ResumeRoute:
         data = ChunkStatusResponse(**result).model_dump()
         return AppJSONResponse(data=data)
 
-    @router.post("/resume/parse/{job_id}/retry", status_code=202)
+    @router.post("/resume/parse/{job_id}/retry", status_code=200)
     async def retry_parse(self, request: Request, job_id: str):
-        """Re-queue a failed parse job. Returns 409 if the job is not in failed state."""
+        """Re-run parsing for a failed parse job. Returns 409 if the job is not in failed state."""
         result = await self.service.retry_parse_job(job_id)
-        data = RetryResponse(**result).model_dump()
-        return AppJSONResponse(data=data, message=RESUME_PARSE_RETRY_QUEUED, status_code=202)
+        data = ParseRetryResponse(**result).model_dump()
+        return AppJSONResponse(data=data, message=result["message"])
 
     @router.post("/resume/chunk/{candidate_id}/retry", status_code=202)
     async def retry_chunk(self, request: Request, candidate_id: str):

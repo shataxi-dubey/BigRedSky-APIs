@@ -1,7 +1,7 @@
 """Celery application configuration and initialization."""
 
 from celery import Celery
-from celery.signals import worker_ready
+from celery.signals import worker_process_init
 
 from app import settings
 
@@ -31,9 +31,8 @@ celery_app.conf.update(
 )
 
 
-@worker_ready.connect
+@worker_process_init.connect
 def preload_models(**kwargs):
-    from app.tasks.resume.resume_task import _get_gliner, _get_dense_model, _get_sparse_model
-    _get_gliner()
+    from app.tasks.resume.resume_task import _get_dense_model, _get_sparse_model
     _get_dense_model()
     _get_sparse_model()

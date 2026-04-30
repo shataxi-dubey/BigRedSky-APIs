@@ -35,10 +35,22 @@ class ParsedResume(BaseModel):
 
 # ─── API response schemas ─────────────────────────────────────────────────
 
-class ParseJobResponse(BaseModel):
-    job_id: str
+class ParseResponse(BaseModel):
+    """Returned immediately from POST /resume/parse — parsing is synchronous."""
+    candidate_id: str
     chunk_job_id: str
+    chunk_status: str
+    pii_entities: List[Dict[str, str]]
+    parsed_result: Dict[str, Any]
+
+
+class ParseRetryResponse(BaseModel):
+    """Returned from POST /resume/parse/{job_id}/retry — re-parses synchronously."""
+    job_id: str
+    candidate_id: str
     status: str
+    pii_entities: List[Dict[str, str]]
+    parsed_result: Dict[str, Any]
     message: str
 
 
