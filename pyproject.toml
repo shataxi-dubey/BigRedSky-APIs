@@ -41,7 +41,6 @@ dependencies = [
   "rank-bm25>=0.2.2",
   "asyncpg>=0.31.0",
   "sqlalchemy[asyncio]>=2.0.41",
-  "asyncpg>=0.31.0",
   "alembic>=1.16.5",
   "aioboto3>=15.5.0",
   "beautifulsoup4>=4.14.3",
