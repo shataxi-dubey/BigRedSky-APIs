@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from .jd.controller import router as jd_router
-from .resume.controller import router as resume_router
+from .resume_summary.controller import router as resume_router
 
 # Define and configure versioned API routers
 v1_routers = APIRouter()

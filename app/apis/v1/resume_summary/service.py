@@ -12,7 +12,7 @@ from app.core.exceptions.base import CustomException
 from app.constants.messages import (
     RESUME_SUMMARY_PARSE_ERROR,
 )
-from app.workflows.graphs.summary import SUMMARY_PROMPT
+from app.workflows.graphs.resume_summary import SUMMARY_PROMPT
 
 from .helper import fetch_resume_from_s3, html_to_text, parse_resume_file, scrub_pii
 from .models import SummaryData, SummaryRequest, SummaryResponse
