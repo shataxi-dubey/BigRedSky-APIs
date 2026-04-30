@@ -11,6 +11,26 @@ from app.core.exceptions import CustomException
 from app.core.responses import AppJSONResponse
 
 
+def _sanitize_validation_errors(exc: RequestValidationError) -> list:
+    """Convert Pydantic v2 validation errors to a JSON-serializable list.
+
+    Pydantic v2 puts the original exception object inside error['ctx'], which
+    is not JSON-serializable. This converts every non-primitive value to str.
+    """
+    sanitized = []
+    for error in exc.errors():
+        entry = {}
+        for key, value in error.items():
+            if key == "ctx" and isinstance(value, dict):
+                entry[key] = {k: str(v) for k, v in value.items()}
+            elif isinstance(value, Exception):
+                entry[key] = str(value)
+            else:
+                entry[key] = value
+        sanitized.append(entry)
+    return sanitized
+
+
 class HandleExceptions:
     """Handles various exception types for the FastAPI application."""
 
@@ -44,7 +64,7 @@ class HandleExceptions:
             return await self._create_json_response(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 message=messages.PYDANTIC_VALIDATION_ERROR,
-                error_log=exc.errors(),  # type: ignore
+                error_log=_sanitize_validation_errors(exc),
             )
 
     def _handle_fastapi_http_exception(self):

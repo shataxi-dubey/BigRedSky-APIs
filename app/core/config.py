@@ -73,6 +73,9 @@ class AppConfig(BaseSettings):
     # JD Creator models
     JD_LLM_MODEL: str = "gpt-4.1"
 
+    # Contact Draft models
+    CONTACT_LLM_MODEL: str = "gpt-4.1"
+
     # Local Model (LM Studio)
     LOCAL_MODEL_URL: str = "http://127.0.0.1:1234"
     USE_LOCAL_MODEL: bool = False  # Default to OpenAI, can be overridden
