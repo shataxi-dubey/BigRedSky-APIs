@@ -29,30 +29,21 @@ class JobDetails(BaseModel):
 class GenerateRequest(BaseModel):
     """Request body for POST /api/v1/jd/generate.
 
-    First call: provide input_type + the matching content field. session_id must be absent.
-    Subsequent calls: provide session_id + raw_text as the refinement instruction.
+    session_id is always supplied by the client. If no session exists for it in the
+    DB the server treats the call as initial generation; otherwise as a refinement turn.
+    At least one of raw_text, template, or details must be provided on every call.
     """
 
-    input_type: Optional[Literal["raw_text", "template", "details"]] = None
+    session_id: str = Field(description="Client-generated session identifier.")
+    input_type: Optional[List[Literal["raw_text", "template", "details"]]] = None
     raw_text: Optional[str] = None
     template: Optional[str] = None
     details: Optional[JobDetails] = None
-    session_id: Optional[str] = None
 
     @model_validator(mode="after")
     def validate_input_fields(self) -> "GenerateRequest":
-        if self.session_id:
-            if not self.raw_text:
-                raise ValueError("raw_text (refinement instruction) is required when session_id is provided.")
-        else:
-            if not self.input_type:
-                raise ValueError("input_type is required for the initial generation.")
-            if self.input_type == "raw_text" and not self.raw_text:
-                raise ValueError("raw_text is required when input_type is 'raw_text'.")
-            if self.input_type == "template" and not self.template:
-                raise ValueError("template is required when input_type is 'template'.")
-            if self.input_type == "details" and not self.details:
-                raise ValueError("details is required when input_type is 'details'.")
+        if not any([self.raw_text, self.template, self.details]):
+            raise ValueError("At least one of raw_text, template, or details must be provided.")
         return self
 
 

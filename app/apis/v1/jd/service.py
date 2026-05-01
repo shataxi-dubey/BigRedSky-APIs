@@ -12,7 +12,7 @@ from sqlalchemy import select
 
 from app import settings
 from app.constants.constants import MAX_REFINEMENTS
-from app.constants.messages import JD_SESSION_NOT_FOUND, REFINEMENT_LIMIT_REACHED
+from app.constants.messages import REFINEMENT_LIMIT_REACHED
 from app.core.database import JDSession, async_session_factory
 from app.core.exceptions.base import CustomException
 from app.workflows.graphs.jd.prompts import GENERATE_PROMPT, REFINE_PROMPT, REPHRASE_PROMPT
@@ -38,15 +38,19 @@ class JDService:
     ) -> Callable[[], AsyncGenerator[str, None]]:
         """Stream a generated or refined JD as SSE events.
 
-        First call (no session_id): creates a new JDSession, generates the JD,
-        persists human + AI messages to DB.
-
-        Subsequent calls (session_id provided): loads session, appends the new
-        refinement turn, streams the updated JD, persists updated messages.
+        Looks up the session_id (client-provided) in the DB.
+        No existing session → initial generation.
+        Existing session → refinement turn.
         """
-        if request.session_id:
-            return await self._refine(request)
-        return await self._generate(request)
+        async with async_session_factory() as db:
+            result = await db.execute(
+                select(JDSession).where(JDSession.id == uuid.UUID(request.session_id))
+            )
+            session = result.scalar_one_or_none()
+
+        if session is None:
+            return await self._generate(request)
+        return await self._refine(request, session)
 
     async def _generate(
         self, request: GenerateRequest
@@ -58,7 +62,7 @@ class JDService:
             HumanMessage(content=human_content),
         ]
 
-        session_id = uuid.uuid4()
+        session_id = uuid.UUID(request.session_id)
         jd_id = uuid.uuid4()
         llm = self.llm
 
@@ -98,22 +102,9 @@ class JDService:
         return stream
 
     async def _refine(
-        self, request: GenerateRequest
+        self, request: GenerateRequest, session: JDSession
     ) -> Callable[[], AsyncGenerator[str, None]]:
         """Handle a refinement turn against an existing JD session."""
-        async with async_session_factory() as db:
-            result = await db.execute(
-                select(JDSession).where(JDSession.id == uuid.UUID(request.session_id))
-            )
-            session = result.scalar_one_or_none()
-
-        if session is None:
-            raise CustomException(
-                message=JD_SESSION_NOT_FOUND.format(session_id=request.session_id),
-                status_code=404,
-                error_log=f"JDSession not found: {request.session_id}",
-            )
-
         if session.refinements_remaining <= 0:
             raise CustomException(
                 message=REFINEMENT_LIMIT_REACHED,
@@ -172,9 +163,10 @@ class JDService:
 
     @staticmethod
     def _build_generate_content(request: GenerateRequest) -> str:
-        if request.input_type == "raw_text":
+        types = request.input_type or []
+        if "raw_text" in types and request.raw_text:
             return f"Generate a job description from the following raw text:\n\n{request.raw_text}"
-        if request.input_type == "template":
+        if "template" in types and request.template:
             return f"Generate a job description by filling in the following template:\n\n{request.template}"
         d = request.details
         responsibilities = "\n".join(f"- {r}" for r in (d.responsibilities or []))
