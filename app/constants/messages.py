@@ -34,6 +34,15 @@ RESUME_CHUNK_NOT_FOUND = "No chunking job found for candidate_id={candidate_id}.
 RESUME_PARSE_NOT_FOUND = "No parse job found for job_id={job_id}."
 RESUME_JOB_NOT_RETRYABLE = "Job cannot be retried — current status is '{status}'. Only failed jobs can be retried."
 RESUME_CHUNK_RETRY_QUEUED = "Chunk job re-queued successfully."
+# AI Ranking
+RANKING_CRITERIA_GENERATED = "Scoring criteria generated successfully."
+RANKING_CRITERIA_NOT_FOUND = "No scoring criteria found for jd_id={jd_id}."
+RANKING_JD_FILE_TYPE_ERROR = "Only PDF, DOCX, and HTML files are supported for JD upload."
+RANKING_JD_FILE_PARSE_ERROR = "Failed to extract text from the JD file."
+RANKING_CRITERIA_PARSE_ERROR = "Failed to parse the LLM response for scoring criteria."
+RANKING_SCORE_JOB_QUEUED = "Scoring job queued successfully."
+RANKING_SCORE_JOB_NOT_FOUND = "No scoring job found for job_id={job_id}."
+
 # Resume Summary
 RESUME_SUMMARY_GENERATED = "Resume summary generated successfully."
 RESUME_SUMMARY_NOT_FOUND = "No summary found for the given candidate and JD."
