@@ -13,7 +13,10 @@ RATE_LIMIT_ERROR = "Rate limit exceeded. Try again in {retry_after} seconds."
 
 # Contact Draft
 CONTACT_DRAFTED = "Email draft generated successfully."
+CONTACT_DRAFT_REFINED = "Email draft refined successfully."
 CONTACT_DRAFT_PARSE_ERROR = "Failed to parse the LLM response for the email draft."
+CONTACT_SESSION_NOT_FOUND = "No contact draft session found for session_id={session_id}."
+CONTACT_REFINEMENT_LIMIT_REACHED = "You have used all 6 refinements for this session."
 
 # JD Creator
 JD_GENERATED = "Job description generated successfully."
