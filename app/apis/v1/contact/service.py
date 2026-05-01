@@ -11,8 +11,7 @@ from pydantic import SecretStr
 from sqlalchemy import select
 
 from app import settings
-from app.constants.constants import MAX_CONTACT_REFINEMENTS
-from app.constants.messages import CONTACT_DRAFT_PARSE_ERROR, CONTACT_REFINEMENT_LIMIT_REACHED
+from app.constants.messages import CONTACT_DRAFT_PARSE_ERROR
 from app.core.database import ContactDraftSession, async_session_factory
 from app.core.exceptions.base import CustomException
 from app.workflows.graphs.contact.prompts import DRAFT_PROMPT, REFINE_PROMPT
@@ -87,7 +86,6 @@ class ContactService:
                         draft_id=draft_id,
                         draft_json=ai_text,
                         messages=messages,
-                        refinements_remaining=MAX_CONTACT_REFINEMENTS,
                     )
                 )
                 await db.commit()
@@ -96,7 +94,6 @@ class ContactService:
             metadata = {
                 "session_id": str(session_id),
                 "draft_id": str(draft_id),
-                "refinements_remaining": MAX_CONTACT_REFINEMENTS,
             }
             yield f"event: metadata\ndata: {json.dumps(metadata)}\n\n"
             yield "event: complete\ndata: [DONE]\n\n"
@@ -107,13 +104,6 @@ class ContactService:
         self, request: DraftRequest, session: ContactDraftSession
     ) -> Callable[[], AsyncGenerator[str, None]]:
         """Handle a refinement turn against an existing contact draft session."""
-        if session.refinements_remaining <= 0:
-            raise CustomException(
-                message=CONTACT_REFINEMENT_LIMIT_REACHED,
-                status_code=429,
-                error_log=CONTACT_REFINEMENT_LIMIT_REACHED,
-            )
-
         history_messages = [
             AIMessage(content=m["content"]) if m["role"] == "assistant" else HumanMessage(content=m["content"])
             for m in session.messages
@@ -126,7 +116,6 @@ class ContactService:
 
         session_id = session.id
         draft_id = session.draft_id
-        refinements_left = session.refinements_remaining - 1
         llm = self.llm
 
         async def stream() -> AsyncGenerator[str, None]:
@@ -151,14 +140,12 @@ class ContactService:
                 record = result.scalar_one()
                 record.messages = updated_messages
                 record.draft_json = ai_text
-                record.refinements_remaining = refinements_left
                 await db.commit()
 
-            logger.info(f"Contact draft refined: session_id={session_id} refinements_left={refinements_left}")
+            logger.info(f"Contact draft refined: session_id={session_id}")
             metadata = {
                 "session_id": str(session_id),
                 "draft_id": str(draft_id),
-                "refinements_remaining": refinements_left,
             }
             yield f"event: metadata\ndata: {json.dumps(metadata)}\n\n"
             yield "event: complete\ndata: [DONE]\n\n"

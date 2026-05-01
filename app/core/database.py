@@ -90,7 +90,6 @@ class ContactDraftSession(Base):
     draft_id: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
     draft_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     messages: Mapped[List[Any]] = mapped_column(JSON, default=list)
-    refinements_remaining: Mapped[int] = mapped_column(Integer, default=6)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
