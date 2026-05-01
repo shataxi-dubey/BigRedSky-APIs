@@ -94,8 +94,8 @@ Automatically populate an application form by extracting structured data from a 
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/v1/resume/parse` | JWT / OAuth | Parse resume & return structured form data |
-| `GET` | `/api/v1/resume/chunk/{candidate_id}/status` | JWT / OAuth | Poll the status of a background chunking job |
+| `POST` | `/api/v1/resume/parse` | Parse resume & return structured form data |
+| `GET` | `/api/v1/resume/chunk/{candidate_id}/status` | Poll the status of a background chunking job |
 
 ### 5.3 Request — `POST /api/v1/resume/parse`
 
@@ -163,10 +163,10 @@ Generate and iteratively refine a job description (JD) from raw text, a template
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/v1/jd/generate` | JWT / OAuth | Generate a JD from raw input, template, or structured details |
-| `POST` | `/api/v1/jd/rephrase` | JWT / OAuth | Rephrase a user-selected passage within the JD |
-| `POST` | `/api/v1/jd/refine` | JWT / OAuth | Refine the full JD via a natural-language instruction |
-| `GET` | `/api/v1/jd/{jd_id}` | JWT / OAuth | Fetch a finalised JD by ID |
+| `POST` | `/api/v1/jd/generate` | Generate a JD from raw input, template, or structured details |
+| `POST` | `/api/v1/jd/rephrase` | Rephrase a user-selected passage within the JD |
+| `POST` | `/api/v1/jd/refine` | Refine the full JD via a natural-language instruction |
+| `GET` | `/api/v1/jd/{jd_id}` | Fetch a finalised JD by ID |
 
 ### 6.3 Generate — `POST /api/v1/jd/generate`
 
@@ -242,8 +242,8 @@ Generate a concise, JD-aware professional profile for a candidate highlighting t
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/v1/resume/summary` | JWT / OAuth | Generate or retrieve a cached resume summary |
-| `DELETE` | `/api/v1/resume/summary/{candidate_id}/{jd_id}` | JWT / OAuth | Invalidate cache for a candidate + JD pair |
+| `POST` | `/api/v1/resume/summary` | Generate or retrieve a cached resume summary |
+| `DELETE` | `/api/v1/resume/summary/{candidate_id}/{jd_id}` | Invalidate cache for a candidate + JD pair |
 
 ### 7.3 Request — `POST /api/v1/resume/summary`
 
@@ -296,8 +296,8 @@ Generate personalised outreach emails to candidates, either individually or in b
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/v1/contact/draft` | JWT / OAuth | Draft an email for one or more candidates |
-| `GET` | `/api/v1/contact/draft/{job_id}` | JWT / OAuth | Poll bulk draft job status and results |
+| `POST` | `/api/v1/contact/draft` | Draft an email for one or more candidates |
+| `GET` | `/api/v1/contact/draft/{job_id}` | Poll bulk draft job status and results |
 
 ### 8.3 Request — `POST /api/v1/contact/draft`
 
@@ -362,10 +362,10 @@ Score all candidates who applied for a job role against LLM-generated scoring cr
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/v1/ranking/criteria` | JWT / OAuth | Generate and persist scoring criteria for a JD |
-| `GET` | `/api/v1/ranking/criteria/{jd_id}` | JWT / OAuth | Retrieve stored scoring criteria for a JD |
-| `POST` | `/api/v1/ranking/score` | JWT / OAuth | Asynchronously score all candidates for a job |
-| `GET` | `/api/v1/ranking/score/{job_id}` | JWT / OAuth | Poll scoring job status and results |
+| `POST` | `/api/v1/ranking/criteria` | Generate and persist scoring criteria for a JD |
+| `GET` | `/api/v1/ranking/criteria/{jd_id}` | Retrieve stored scoring criteria for a JD |
+| `POST` | `/api/v1/ranking/score` | Asynchronously score all candidates for a job |
+| `GET` | `/api/v1/ranking/score/{job_id}` | Poll scoring job status and results |
 
 ### 9.3 Generate Criteria — `POST /api/v1/ranking/criteria`
 
@@ -374,7 +374,7 @@ Score all candidates who applied for a job role against LLM-generated scoring cr
 | Field | Description |
 |---|---|
 | `jd_id` | (string, required) Finalised JD to derive criteria from |
-| `jd_file` | (File, required) PDF/DOCX file of the JD | 
+| `jd_file` | (File, required) PDF/DOCX/HTML file of the JD | 
 
 **Response — `201 Created`**
 
@@ -415,6 +415,8 @@ Score all candidates who applied for a job role against LLM-generated scoring cr
 }
 ```
 
+  The resume of the candidates are retrieved from the Qdrant. Qdrant has the resume chunks with section name and section text. By combining all the sections, candidate full resume can be created.
+
 ### 9.5 Scoring Results — `GET /api/v1/ranking/score/{job_id}` → `200 OK`
 
 ```json
@@ -425,17 +427,120 @@ Score all candidates who applied for a job role against LLM-generated scoring cr
   "completed_at": "2026-04-27T10:05:00Z",
   "results": [
     {
-      "candidate_id": "<uuid>",
-      "rank": 1,
-      "total_score": 87.5,
-      "score_breakdown": [
+  "vacancy": {
+    "title": "Community and Digital Programs Officer, Marketing"
+  },
+  "overall_match": {
+    "percentage": 94,
+    "requirements_met": {
+      "met": 10,
+      "total": 11
+    }
+  },
+  "hold": {
+    "status": "clear",
+    "red_flags": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "alerts": [],
+  "requirement_detail": {
+    "skills": {
+      "percentage": 100,
+      "met": 7,
+      "total": 7,
+      "items": [
         {
-          "criterion_name": "Technical Skills Match",
-          "score": 9,
-          "rationale": "Candidate has 4 of 5 required technologies..."
+          "name": "Digital marketing",
+          "type": "Skill",
+          "priority": "must-have",
+          "status": "met"
+        },
+        {
+          "name": "Community engagement",
+          "type": "Skill",
+          "priority": "must-have",
+          "status": "met"
+        },
+        {
+          "name": "Content strategy",
+          "type": "Skill",
+          "priority": "must-have",
+          "status": "met"
+        },
+        {
+          "name": "Social media management",
+          "type": "Skill",
+          "priority": "must-have",
+          "status": "met"
+        },
+        {
+          "name": "SEO/Analytics",
+          "type": "Skill",
+          "priority": "good-to-have",
+          "status": "met"
+        },
+        {
+          "name": "Stakeholder communication",
+          "type": "Soft skill",
+          "priority": "good-to-have",
+          "status": "met"
+        },
+        {
+          "name": "Event coordination",
+          "type": "Skill",
+          "priority": "good-to-have",
+          "status": "met"
+        }
+      ]
+    },
+    "experience": {
+      "percentage": 0,
+      "met": 0,
+      "total": 2,
+      "items": [
+        {
+          "name": "3+ years community programs",
+          "type": "Experience",
+          "priority": "must-have",
+          "status": "Not met"
+        },
+        {
+          "name": "Marketing/digital sector",
+          "type": "Domain",
+          "priority": "good-to-have",
+          "status": "Not met"
+        }
+      ]
+    },
+    "qualifications": {
+      "percentage": 33,
+      "met": 1,
+      "total": 3,
+      "items": [
+        {
+          "name": "Master's Degree",
+          "type": "Education",
+          "priority": "must-have",
+          "status": "Not met"
+        },
+        {
+          "name": "Bachelor's Degree",
+          "type": "Education",
+          "priority": "must-have",
+          "status": "Met"
+        },
+        {
+          "name": "Digital marketing certification",
+          "type": "Credential",
+          "priority": "good-to-have",
+          "status": "Not met"
         }
       ]
     }
+  }
+}
   ]
 }
 ```
