@@ -44,7 +44,7 @@ class JDService:
         """
         async with async_session_factory() as db:
             result = await db.execute(
-                select(JDSession).where(JDSession.id == uuid.UUID(request.session_id))
+                select(JDSession).where(JDSession.id == request.session_id)
             )
             session = result.scalar_one_or_none()
 
@@ -62,7 +62,7 @@ class JDService:
             HumanMessage(content=human_content),
         ]
 
-        session_id = uuid.UUID(request.session_id)
+        session_id = request.session_id
         jd_id = uuid.uuid4()
         llm = self.llm
 

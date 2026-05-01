@@ -1,5 +1,6 @@
 """Pydantic request and response schemas for the JD Creator API."""
 
+import uuid
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
@@ -34,7 +35,7 @@ class GenerateRequest(BaseModel):
     At least one of raw_text, template, or details must be provided on every call.
     """
 
-    session_id: str = Field(description="Client-generated session identifier.")
+    session_id: uuid.UUID = Field(description="Client-generated session identifier (UUID).")
     input_type: Optional[List[Literal["raw_text", "template", "details"]]] = None
     raw_text: Optional[str] = None
     template: Optional[str] = None
