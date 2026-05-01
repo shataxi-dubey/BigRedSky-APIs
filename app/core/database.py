@@ -64,6 +64,25 @@ class ResumeChunkJob(Base):
     )
 
 
+class JDSession(Base):
+    __tablename__ = "jd_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    jd_id: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
+    jd_html: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    messages: Mapped[List[Any]] = mapped_column(JSON, default=list)
+    refinements_remaining: Mapped[int] = mapped_column(Integer, default=5)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 async_engine = create_async_engine(settings.DATABASE_URL, echo=False, poolclass=NullPool)
 async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
     async_engine, expire_on_commit=False

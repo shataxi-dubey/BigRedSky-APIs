@@ -20,6 +20,7 @@ JD_GENERATED = "Job description generated successfully."
 JD_REPHRASED = "Text rephrased successfully."
 JD_REFINED = "Job description refined successfully."
 REFINEMENT_LIMIT_REACHED = "You have used all 5 refinements for this session."
+JD_SESSION_NOT_FOUND = "No JD session found for session_id={session_id}."
 JD_GENERATE_FIELD_REQUIRED = "{field} is required when input_type is '{input_type}'."
 
 # Resume Parser
