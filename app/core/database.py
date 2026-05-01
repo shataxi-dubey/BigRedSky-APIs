@@ -83,6 +83,24 @@ class JDSession(Base):
     )
 
 
+class ContactDraftSession(Base):
+    __tablename__ = "contact_draft_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    draft_id: Mapped[uuid.UUID] = mapped_column(default=uuid.uuid4)
+    draft_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    messages: Mapped[List[Any]] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 async_engine = create_async_engine(settings.DATABASE_URL, echo=False, poolclass=NullPool)
 async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
     async_engine, expire_on_commit=False

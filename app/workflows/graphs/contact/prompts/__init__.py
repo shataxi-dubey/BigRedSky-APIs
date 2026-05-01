@@ -15,3 +15,4 @@ def load_prompt(filename: str) -> str:
 
 
 DRAFT_PROMPT = load_prompt("draft.md")
+REFINE_PROMPT = load_prompt("refine.md")
