@@ -164,33 +164,40 @@ class JDService:
     @staticmethod
     def _build_generate_content(request: GenerateRequest) -> str:
         types = request.input_type or []
+        parts: list[str] = []
+
         if "raw_text" in types and request.raw_text:
-            return f"Generate a job description from the following raw text:\n\n{request.raw_text}"
+            parts.append(f"Raw Text:\n{request.raw_text}")
+
         if "template" in types and request.template:
-            return f"Generate a job description by filling in the following template:\n\n{request.template}"
-        d = request.details
-        responsibilities = "\n".join(f"- {r}" for r in (d.responsibilities or []))
-        required_skills = "\n".join(f"- {s}" for s in (d.required_skills or []))
-        preferred_skills = "\n".join(f"- {s}" for s in (d.preferred_skills or []))
-        return (
-            f"Generate a job description for the following role:\n\n"
-            f"Job Title: {d.job_title}\n"
-            f"Job Role: {d.job_role}\n"
-            f"Department: {d.department}\n"
-            f"Country: {d.country}\n"
-            f"State: {d.state}\n"
-            f"City: {d.city}\n"
-            f"Fully remote job: {d.is_fully_remote}\n"
-            f"Industry: {d.industry}\n"
-            f"Job function: {d.job_function}\n"
-            f"Employment Type: {d.employment_type}\n"
-            f"Full time job: {d.is_full_time}\n"
-            f"Responsibilities:\n{responsibilities}\n"
-            f"Required Skills:\n{required_skills}\n"
-            f"Preferred Skills:\n{preferred_skills}\n"
-            f"Compensation Range: {d.compensation_range}\n"
-            f"Currency: {d.currency}"
-        )
+            parts.append(f"Template:\n{request.template}")
+
+        if "details" in types and request.details:
+            d = request.details
+            responsibilities = "\n".join(f"- {r}" for r in (d.responsibilities or []))
+            required_skills = "\n".join(f"- {s}" for s in (d.required_skills or []))
+            preferred_skills = "\n".join(f"- {s}" for s in (d.preferred_skills or []))
+            parts.append(
+                f"Details:\n"
+                f"Job Title: {d.job_title}\n"
+                f"Job Role: {d.job_role}\n"
+                f"Department: {d.department}\n"
+                f"Country: {d.country}\n"
+                f"State: {d.state}\n"
+                f"City: {d.city}\n"
+                f"Fully remote job: {d.is_fully_remote}\n"
+                f"Industry: {d.industry}\n"
+                f"Job function: {d.job_function}\n"
+                f"Employment Type: {d.employment_type}\n"
+                f"Full time job: {d.is_full_time}\n"
+                f"Responsibilities:\n{responsibilities}\n"
+                f"Required Skills:\n{required_skills}\n"
+                f"Preferred Skills:\n{preferred_skills}\n"
+                f"Compensation Range: {d.compensation_range}\n"
+                f"Currency: {d.currency}"
+            )
+
+        return "Generate a job description based on the following:\n\n" + "\n\n".join(parts)
 
     # ------------------------------------------------------------------
     # Rephrase
