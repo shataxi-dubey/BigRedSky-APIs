@@ -117,10 +117,77 @@ Defined in full in `rule.md`. Key rules:
 ## Architecture Decisions
 
 - **Async-first**: Long-running operations (resume chunking, AI ranking) return `202 + job_id` immediately; clients poll a status endpoint.
-- **Contact Draft is synchronous**: Single LLM call, result returned directly. No Celery task, no polling.
 - **PII scrubbing is mandatory**: All resume text must pass through GLiNER before any LLM call. Raw PII is stored only in designated fields — never logged or forwarded to the LLM.
 - **Resume Summary is cached**: Redis key `summary:{candidate_id}:{jd_id}`, TTL 24 hours (configurable via `SUMMARY_CACHE_TTL`).
-- **JD refinements are capped**: 5 refinements per session. A `429` with `REFINEMENT_LIMIT_REACHED` is returned when the cap is hit.
+- **JD refinements are capped**: 6 refinements per session. A `429` with `REFINEMENT_LIMIT_REACHED` is returned when the cap is hit.
+- **Contact Draft has no refinement cap**: Users may refine a draft unlimited times within a session.
+
+---
+
+## Session Persistence Pattern
+
+Features with multi-turn LLM interaction (JD Creator, Contact Draft) follow this pattern. Apply it to any future feature that needs iterative refinement.
+
+### Request contract
+- `session_id: uuid.UUID` — **always provided by the client**, never generated server-side.
+- `input_type: Optional[List[Literal[...]]]` — declares which content fields the client is sending.
+- Content fields (`raw_text`, `template`, `details`, etc.) — validator raises `ValueError` only when **all** content fields are absent.
+
+### Server-side dispatch
+The endpoint looks up `session_id` in PostgreSQL on every call:
+- **No row found** → initial generation. Create the session record after streaming completes.
+- **Row found** → refinement turn. Load message history, call LLM, update the record.
+
+```python
+async with async_session_factory() as db:
+    result = await db.execute(select(XSession).where(XSession.id == request.session_id))
+    session = result.scalar_one_or_none()
+
+if session is None:
+    return await self._generate(request)
+return await self._refine(request, session)
+```
+
+### Streaming + DB write
+Buffer the full LLM response while streaming, then write to DB **after the stream ends** inside the generator:
+
+```python
+async def stream() -> AsyncGenerator[str, None]:
+    collected: list[str] = []
+    async for chunk in llm.astream(lc_messages):
+        if chunk.content:
+            collected.append(chunk.content)
+            yield f"event: content\ndata: {json.dumps(chunk.content)}\n\n"
+
+    ai_text = "".join(collected)
+    # persist to DB here
+    yield f"event: metadata\ndata: {json.dumps(metadata)}\n\n"
+    yield "event: complete\ndata: [DONE]\n\n"
+```
+
+### Message history
+- Stored as a JSON array in the session table: `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}, ...]`
+- **System prompt is never stored** — it is injected fresh from the prompt file on every call.
+- On refinement, the full history is reconstructed as LangChain `HumanMessage` / `AIMessage` objects and prepended with the appropriate system prompt.
+
+### SSE event shape (all session-based endpoints)
+```
+event: content   → streamed LLM output chunks
+event: metadata  → { session_id, <feature_id>, [refinements_remaining if capped] }
+event: complete  → [DONE]
+```
+
+### DB table conventions
+Each session-based feature has its own table in `app/core/database.py`:
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID PK | = `session_id`, set by client |
+| `<feature>_id` | UUID | Server-generated public identifier for the output |
+| `<output_field>` | Text | Latest full LLM output (e.g. `jd_html`, `draft_json`) |
+| `messages` | JSON | Conversation history (no system prompt) |
+| `refinements_remaining` | Integer | Only for capped features (e.g. JD Creator) |
+| `created_at` / `updated_at` | DateTime(tz) | Standard audit columns |
 
 ---
 
