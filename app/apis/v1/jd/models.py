@@ -1,5 +1,6 @@
 """Pydantic request and response schemas for the JD Creator API."""
 
+import uuid
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
@@ -27,21 +28,23 @@ class JobDetails(BaseModel):
 
 
 class GenerateRequest(BaseModel):
-    """Request body for POST /api/v1/jd/generate."""
+    """Request body for POST /api/v1/jd/generate.
 
-    input_type: Literal["raw_text", "template", "details"]
+    session_id is always supplied by the client. If no session exists for it in the
+    DB the server treats the call as initial generation; otherwise as a refinement turn.
+    At least one of raw_text, template, or details must be provided on every call.
+    """
+
+    session_id: uuid.UUID = Field(description="Client-generated session identifier (UUID).")
+    input_type: Optional[List[Literal["raw_text", "template", "details"]]] = None
     raw_text: Optional[str] = None
     template: Optional[str] = None
     details: Optional[JobDetails] = None
 
     @model_validator(mode="after")
     def validate_input_fields(self) -> "GenerateRequest":
-        if self.input_type == "raw_text" and not self.raw_text:
-            raise ValueError("raw_text is required when input_type is 'raw_text'.")
-        if self.input_type == "template" and not self.template:
-            raise ValueError("template is required when input_type is 'template'.")
-        if self.input_type == "details" and not self.details:
-            raise ValueError("details is required when input_type is 'details'.")
+        if not any([self.raw_text, self.template, self.details]):
+            raise ValueError("At least one of raw_text, template, or details must be provided.")
         return self
 
 
@@ -61,23 +64,3 @@ class RephraseResponse(BaseModel):
 
     original_text: str
     rephrased_text: str
-
-
-class ConversationMessage(BaseModel):
-    """A single turn in the JD refinement conversation history."""
-
-    role: Literal["user", "assistant"]
-    content: str
-
-
-class RefineRequest(BaseModel):
-    """Request body for POST /api/v1/jd/refine."""
-
-    instruction: str = Field(description="Natural-language instruction to apply to the JD.")
-    messages: List[ConversationMessage] = Field(
-        description="Conversation history: alternating assistant (JD) and user (instruction) turns."
-    )
-    refinements_remaining: int = Field(
-        description="Number of refinements the caller still allows. Must be > 0.",
-        ge=0,
-    )
