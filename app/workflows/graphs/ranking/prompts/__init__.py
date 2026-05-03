@@ -17,3 +17,4 @@ def load_prompt(filename: str) -> str:
 JD_ANALYSER_PROMPT = load_prompt("jd_analyser.md")
 CRITERIA_GENERATOR_PROMPT = load_prompt("criteria_generator.md")
 SCORER_PROMPT = load_prompt("scorer.md")
+EVIDENCE_FINDER_PROMPT = load_prompt("evidence-relation-finder.md")

@@ -3,6 +3,7 @@
 import io
 import json
 import uuid
+import time
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -72,9 +73,16 @@ class RankingService:
         self._validate_jd_file_type(filename, content_type)
 
         jd_text = self._extract_jd_text(file_bytes, filename, content_type)
+        start = time.time()
         analysis = await self._run_jd_analyser(jd_text)
+        elapsed_time = time.time() - start
+        logger.info(f"Total time elapsed in JD analysis {elapsed_time}")
         clean_atoms = self._dedup_atoms(analysis.raw_atoms)
+
+        start = time.time()
         criteria_output = await self._run_criteria_generator(analysis.jd_title, clean_atoms)
+        elapsed_time = time.time() - start
+        logger.info(f"Total time elapsed in criteria generation {elapsed_time}")
 
         record = await self._persist_criteria(jd_id, criteria_output)
         return self._build_criteria_response(jd_id, record, criteria_output)
@@ -128,8 +136,8 @@ class RankingService:
             )
             await db.commit()
 
-        from app.tasks.ranking.ranking_task import score_candidates  # lazy to avoid circular import
-        score_candidates.delay(str(job_id))
+        from app.tasks.celery_main import celery_app
+        celery_app.send_task("score_candidates", args=[str(job_id)])
 
         logger.info(
             f"Scoring job queued: job_id={job_id} jd_id={request.jd_id} "
@@ -348,6 +356,7 @@ class RankingService:
                     description=c.reason_for_weight,
                     weight=round(c.weight / 100, 4),
                     scoring_scale="0-10",
+                    explanation=c.description
                 )
                 for c in criteria_output.criteria
             ],

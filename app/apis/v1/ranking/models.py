@@ -79,6 +79,7 @@ class Criterion(BaseModel):
     weight: int
     atom_ids: List[str]
     reason_for_weight: str
+    description: str= Field(description="4-5 words explaining what this criteria covers")
 
 
 class CriteriaGeneratorOutput(BaseModel):
@@ -90,6 +91,21 @@ class CriteriaGeneratorOutput(BaseModel):
     must_have_count: int
     preferred_count: int
     good_to_have_count: int
+
+
+# ─── Internal LLM schemas — Evidence-Relation Finder ─────────────────────────
+
+class AtomEvidenceResult(BaseModel):
+    atom_id: str
+    rule_14_applicable: bool
+    rule_14_result: Literal["holds", "does_not_hold", "not_applicable"]
+    resume_evidence: str
+    evidence_type: Literal["Execution", "Outcome", "Support", "Claim-only", "None"]
+    relation: Literal["Exact", "Related", "Same area, vague", "Nothing"]
+
+
+class EvidenceFinderOutput(BaseModel):
+    results: List[AtomEvidenceResult]
 
 
 # ─── API request models ───────────────────────────────────────────────────────
@@ -106,6 +122,7 @@ class CriterionResponse(BaseModel):
     description: str
     weight: float
     scoring_scale: str = "0-10"
+    explanation:str
 
 
 class CriteriaResponse(BaseModel):

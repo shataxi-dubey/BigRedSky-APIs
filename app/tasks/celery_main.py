@@ -15,6 +15,7 @@ celery_app = Celery(
     backend=redis_url,
     include=[
         "app.tasks.resume.resume_task",
+        "app.tasks.ranking.ranking_task",
     ],
 )
 
