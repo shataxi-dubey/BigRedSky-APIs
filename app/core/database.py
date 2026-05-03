@@ -101,6 +101,50 @@ class ContactDraftSession(Base):
     )
 
 
+class RankingCriteria(Base):
+    __tablename__ = "ranking_criteria"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    jd_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    criteria_json: Mapped[str] = mapped_column(Text)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
+class RankingScoringJob(Base):
+    __tablename__ = "ranking_scoring_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    jd_id: Mapped[str] = mapped_column(String(255), index=True)
+    candidate_ids: Mapped[List[Any]] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    results: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 async_engine = create_async_engine(settings.DATABASE_URL, echo=False, poolclass=NullPool)
 async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
     async_engine, expire_on_commit=False

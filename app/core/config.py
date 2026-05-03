@@ -108,6 +108,9 @@ class AppConfig(BaseSettings):
     SUMMARY_LLM_MODEL: str = "gpt-4.1"
     GLINER_MODEL: str = "urchade/gliner_small-v2.1"
 
+    # AI Ranking
+    RANKING_LLM_MODEL: str = "gpt-4.1"
+
     # PostgreSQL
     DATABASE_URL: str = "postgresql+asyncpg://ats_user:ats_password@localhost:5432/ats_db"
 

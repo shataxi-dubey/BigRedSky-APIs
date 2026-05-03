@@ -52,6 +52,13 @@ RESUME_SECTIONS = [
     "hobbies",
     "others",
 ]
+# AI Ranking
+RANKING_JD_ALLOWED_CONTENT_TYPES = {
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/html",
+}
+
 # Resume Summary
 SUMMARY_PII_LABELS = ["person", "email", "phone number", "address", "date of birth", "location"]
 SUMMARY_PII_PLACEHOLDERS = {
