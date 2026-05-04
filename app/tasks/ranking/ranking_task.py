@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 import uuid
 import time
 from datetime import datetime, timezone
@@ -442,6 +443,35 @@ async def _score_candidate(criteria_dict: dict, resume_text: str) -> Dict[str, A
     }
 
 
+# ─── Scorer: single LLM call (scorer.md handles all 7 steps + rollup) ────────
+
+# def _extract_scorer_json(text: str) -> str:
+#     """Extract JSON block between ===JSON_START=== and ===JSON_END=== markers."""
+#     match = re.search(r"===JSON_START===\s*(.*?)\s*===JSON_END===", text, re.DOTALL)
+#     if not match:
+#         raise ValueError("Scorer LLM output is missing ===JSON_START=== / ===JSON_END=== markers")
+#     return match.group(1).strip()
+
+
+# async def _score_candidate_with_scorer(criteria_dict: dict, resume_text: str) -> Dict[str, Any]:
+#     """Score a candidate using scorer.md — LLM executes all 7 steps and rollup."""
+#     llm = _get_llm()
+#     human_content = (
+#         f"### Criteria Rubric\n{json.dumps(criteria_dict, indent=2)}\n\n"
+#         f"### Resume\n{resume_text}"
+#     )
+#     response = await llm.ainvoke(
+#         [
+#             SystemMessage(content=SCORER_PROMPT),
+#             HumanMessage(content=human_content),
+#         ]
+#     )
+#     json_str = _extract_scorer_json(response.content)
+#     scorer_output: ScorerOutput = ScorerOutput.model_validate_json(json_str)
+#     logger.info(f"Scorer output summary: {scorer_output.scoring_summary}")
+#     return scorer_output.model_dump()
+
+
 # ─── Async core (DB operations) ───────────────────────────────────────────────
 
 async def _run_scoring(job_id: str) -> None:
@@ -497,6 +527,7 @@ async def _run_scoring(job_id: str) -> None:
                 continue
             start = time.time()
             scorer_output = await _score_candidate(criteria_dict, resume_text)
+            # scorer_output = await _score_candidate_with_scorer(criteria_dict, resume_text)
             elapsed_time = time.time() - start
             logger.info(f"Time taken in scoring candidate {candidate_id} resume: {elapsed_time}")
             results.append({"candidate_id": candidate_id, "scorer_output": scorer_output})
