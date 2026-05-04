@@ -182,6 +182,7 @@ _PRIORITY_WEIGHT: Dict[str, int] = {
     "Must-have":    3,
     "Preferred":    2,
     "Good-to-have": 1,
+    # "Good-to-have": 0, # good-to-have is display only so we are not giving weights to it.
 }
 
 
@@ -254,8 +255,8 @@ def _score_single_atom(atom: dict, ev: dict) -> dict:
             "override_applied": False,
             "final_match": "No",
             "base_score": 0.0,
-            # "adjustment": 0.0,
-            # "step_6_adjusted_score": 0.0,
+            "adjustment": 0.0,
+            "step_6_adjusted_score": 0.0,
             "priority_weight": priority_weight,
             "weighted_atom_score": 0.0,
         }
@@ -263,10 +264,9 @@ def _score_single_atom(atom: dict, ev: dict) -> dict:
     max_match = _get_max_match(atom_type, depth, evidence_type)
     intersection_match, final_match, override = _apply_intersection(relation, max_match, evidence_type)
     base_score = _BASE_SCORE[final_match]
-    # adjustment = _EVIDENCE_ADJUSTMENT.get(evidence_type, 0.0)
-    # adjusted_score = max(0.0, round(base_score + adjustment, 4))
-    # weighted_score = round(adjusted_score * priority_weight, 4)
-    weighted_score = round(base_score * priority_weight, 4)
+    adjustment = _EVIDENCE_ADJUSTMENT.get(evidence_type, 0.0)
+    adjusted_score = max(0.0, round(base_score + adjustment, 4))
+    weighted_score = round(adjusted_score * priority_weight, 4)
 
     return {
         "atom_id": atom["id"],
@@ -286,8 +286,8 @@ def _score_single_atom(atom: dict, ev: dict) -> dict:
         "override_applied": override,
         "final_match": final_match,
         "base_score": base_score,
-        # "adjustment": adjustment,
-        # "step_6_adjusted_score": adjusted_score,
+        "adjustment": adjustment,
+        "step_6_adjusted_score": adjusted_score,
         "priority_weight": priority_weight,
         "weighted_atom_score": weighted_score,
     }
@@ -309,8 +309,7 @@ def _compute_rollups(
         non_display = [a for a in atoms_by_crit.get(crit_id, []) if not a["display_only"]]
 
         if non_display:
-            # num = sum(a["step_6_adjusted_score"] * a["priority_weight"] for a in non_display)
-            num = sum(a["base_score"] * a["priority_weight"] for a in non_display)
+            num = sum(a["step_6_adjusted_score"] * a["priority_weight"] for a in non_display)
             den = sum(a["priority_weight"] for a in non_display)
             crit_score = round(num / den, 6) if den > 0 else 0.0
         else:
@@ -331,8 +330,7 @@ def _compute_rollups(
     # Must-have metrics (exclude display_only)
     mh_atoms = [a for a in atom_scores if a["priority"] == "Must-have" and not a["display_only"]]
     mh_total = len(mh_atoms)
-    # mh_matched = sum(1 for a in mh_atoms if a["step_6_adjusted_score"] > 0)
-    mh_matched = sum(1 for a in mh_atoms if a["base_score"] > 0)
+    mh_matched = sum(1 for a in mh_atoms if a["step_6_adjusted_score"] > 0)
     mh_rate = round(mh_matched / mh_total, 6) if mh_total > 0 else 1.0
     final_score = round(base_score * mh_rate, 4)
 
@@ -360,7 +358,7 @@ def _compute_rollups(
             "atom_id": a["atom_id"],
             "atom_text": a["atom_text"],
             "match": a["final_match"],
-            # "adjusted_score": a["step_6_adjusted_score"],
+            "adjusted_score": a["step_6_adjusted_score"],
         }
         for a in atom_scores
         if a["display_only"]
@@ -404,6 +402,7 @@ async def _score_candidate(criteria_dict: dict, resume_text: str) -> Dict[str, A
     )
 
     ev_map: Dict[str, dict] = {r.atom_id: r.model_dump() for r in ev_result.results}
+    logger.info(f"Evidence and relation of each atom {ev_map}")
 
     # Steps 2–7: Python scoring per atom
     atom_scores = [
@@ -423,11 +422,15 @@ async def _score_candidate(criteria_dict: dict, resume_text: str) -> Dict[str, A
         )
         for atom in atoms
     ]
-
+    logger.info(f"Atom scores of candidate {atom_scores}")
     # Rollup and final score
     criterion_rollups, scoring_summary, critical_gaps, good_to_have_display = _compute_rollups(
         atom_scores, criteria
     )
+    logger.info(f"Criterion Rollups {criterion_rollups}")
+    logger.info(f"scoring summary {scoring_summary}")
+    logger.info(f"critical gaps {critical_gaps}")
+    logger.info(f"good_to_have_display {good_to_have_display}")
 
     return {
         "jd_title": jd_title,
