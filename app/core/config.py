@@ -79,9 +79,12 @@ class AppConfig(BaseSettings):
     # Resume Parser models
     RESUME_LLM_MODEL: str = "gpt-4.1-mini"
     CHUNK_LLM_MODEL: str = "gpt-4.1-mini"
-    # Dense embedding model (vector dimension is read from the loaded model at runtime)
-    DENSE_EMBED_MODEL: str = "Qwen/Qwen3-Embedding-8b"
-    # Sparse embedding model (SPLADE)
+    # Dense embedding model via Nebius API
+    DENSE_EMBED_MODEL: str = "Qwen/Qwen3-Embedding-8B"
+    DENSE_EMBED_DIM: int = 4096
+    NEBIUS_API_KEY: str = ""
+    NEBIUS_BASE_URL: str = "https://api.studio.nebius.com/v1/"
+    # Sparse embedding model (SPLADE via fastembed ONNX)
     SPARSE_EMBED_MODEL: str = "prithivida/Splade_PP_en_v1"
 
     # Qdrant

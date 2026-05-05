@@ -34,6 +34,5 @@ celery_app.conf.update(
 
 @worker_process_init.connect
 def preload_models(**kwargs):
-    from app.tasks.resume.resume_task import _get_dense_model, _get_sparse_model
-    _get_dense_model()
+    from app.tasks.resume.resume_task import _get_sparse_model
     _get_sparse_model()

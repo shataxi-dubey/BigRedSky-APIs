@@ -15,6 +15,7 @@ from app.constants.messages import CONTACT_DRAFT_PARSE_ERROR
 from app.core.database import ContactDraftSession, async_session_factory
 from app.core.exceptions.base import CustomException
 from app.workflows.graphs.contact.prompts import DRAFT_PROMPT, REFINE_PROMPT
+from app.core.langfuse_handler import langfuse_handler
 
 from .models import DraftRequest
 
@@ -26,6 +27,7 @@ class ContactService:
         self.llm = ChatOpenAI(
             model=settings.CONTACT_LLM_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
+            callbacks=[langfuse_handler]
         )
 
     # ------------------------------------------------------------------

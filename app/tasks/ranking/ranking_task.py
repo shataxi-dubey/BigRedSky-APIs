@@ -25,6 +25,7 @@ from app.core.database import RankingCriteria, RankingScoringJob, async_session_
 from app.tasks.celery_main import celery_app
 from app.workflows.graphs.ranking.prompts import EVIDENCE_FINDER_PROMPT
 from app.apis.v1.ranking.models import EvidenceFinderOutput
+from app.core.langfuse_handler import langfuse_handler
 
 
 # ─── Lazy singletons ──────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ def _get_llm() -> ChatOpenAI:
         _ranking_llm = ChatOpenAI(
             model=settings.RANKING_LLM_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
+            callbacks=[langfuse_handler]
         )
     return _ranking_llm
 

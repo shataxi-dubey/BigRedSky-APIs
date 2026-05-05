@@ -14,6 +14,7 @@ from pydantic import SecretStr
 from app.constants.constants import GLINER_MODEL_NAME, GLINER_PII_LABELS
 from app.core.config import settings
 from app.workflows.graphs.resume.prompts import EXTRACT_PROMPT
+from app.core.langfuse_handler import langfuse_handler
 
 _gliner_model: Optional[GLiNER] = None
 
@@ -54,6 +55,7 @@ def llm_extract_fields(scrubbed_text: str, form_fields: List[str]) -> Dict[str, 
     llm = ChatOpenAI(
         model=settings.RESUME_LLM_MODEL,
         api_key=SecretStr(settings.OPENAI_API_KEY),
+        callbacks=[langfuse_handler]
     )
     fields_hint = (
         f"\nFocus on extracting these fields: {', '.join(form_fields)}."

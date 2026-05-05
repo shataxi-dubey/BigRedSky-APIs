@@ -47,6 +47,7 @@ from .models import (
     ScoreJobStatusResponse,
     ScoreRequest,
 )
+from app.core.langfuse_handler import langfuse_handler
 
 
 class RankingService:
@@ -56,6 +57,7 @@ class RankingService:
         self.llm = ChatOpenAI(
             model=settings.RANKING_LLM_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
+            callbacks=[langfuse_handler]
         )
 
     # ------------------------------------------------------------------

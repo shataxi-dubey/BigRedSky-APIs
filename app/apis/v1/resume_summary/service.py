@@ -16,6 +16,7 @@ from app.workflows.graphs.resume_summary import SUMMARY_PROMPT
 
 from .helper import fetch_resume_from_s3, html_to_text, parse_resume_file, scrub_pii
 from .models import SummaryData, SummaryRequest, SummaryResponse
+from app.core.langfuse_handler import langfuse_handler
 
 
 class SummaryService:
@@ -25,6 +26,7 @@ class SummaryService:
         self.llm = ChatOpenAI(
             model=settings.SUMMARY_LLM_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
+            callbacks=[langfuse_handler]
         )
 
     async def generate_from_file(
