@@ -46,6 +46,7 @@ dependencies = [
   "beautifulsoup4>=4.14.3",
   "lxml>=5.4.0",
   "gliner>=0.2.26",
+  "fastembed>=0.7.4",
 ]
 
 [project.optional-dependencies]

@@ -16,6 +16,7 @@ from app.constants.messages import REFINEMENT_LIMIT_REACHED
 from app.core.database import JDSession, async_session_factory
 from app.core.exceptions.base import CustomException
 from app.workflows.graphs.jd.prompts import GENERATE_PROMPT, REFINE_PROMPT, REPHRASE_PROMPT
+from app.core.langfuse_handler import langfuse_handler
 
 from .models import GenerateRequest, RephraseRequest
 
@@ -27,6 +28,7 @@ class JDService:
         self.llm = ChatOpenAI(
             model=settings.JD_LLM_MODEL,
             api_key=SecretStr(settings.OPENAI_API_KEY),
+            callbacks=[langfuse_handler]
         )
 
     # ------------------------------------------------------------------
